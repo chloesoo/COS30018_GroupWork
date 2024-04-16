@@ -141,6 +141,8 @@ class AntColonyGUI:
                 capacity = simpledialog.askinteger("Input", f"Enter capacity for coordinate ({row}, {col}):")
                 if capacity is not None:
                     self.clicked_coordinates.append((row, col, capacity))
+                else:
+                    self.clicked_coordinates.append((row, col, 1))
 
     def start_simulation(self):
         num_ants = 10
