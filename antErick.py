@@ -143,6 +143,14 @@ class AntColonyGUI:
                     self.clicked_coordinates.append((row, col, capacity))
                 else:
                     self.clicked_coordinates.append((row, col, 1))
+            else:
+                for coordinate in self.clicked_coordinates:
+                    if (coordinate[0], coordinate[1]) == (row, col):
+                        self.clicked_coordinates.remove(coordinate)
+                        self.canvas.create_rectangle(col * self.cell_size, row * self.cell_size,
+                                (col + 1) * self.cell_size, (row + 1) * self.cell_size,
+                                fill='white', outline='white')
+                    self.cells[row][col] = 0                
 
     def start_simulation(self):
         num_ants = 10
