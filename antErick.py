@@ -1,7 +1,7 @@
 import numpy as np
 import tkinter as tk
 from tkinter import simpledialog
-
+"""
 class AntColony:
     def __init__(self, num_ants, num_iterations, nodes, start_node, alpha=1, beta=2, rho=0.5, Q=100):
         self.num_ants = num_ants
@@ -102,7 +102,7 @@ class AntColony:
             node1 = tour[i]
             node2 = tour[i + 1]
             length += np.sqrt((node1[0] - node2[0])**2 + (node1[1] - node2[1])**2)
-        return length
+        return length"""
 
 class AntColonyGUI:
     def __init__(self, master):
@@ -153,6 +153,11 @@ class AntColonyGUI:
                     self.cells[row][col] = 0                
 
     def start_simulation(self):
+        with open("coordinates.txt", "w") as file:
+            for coordinates in self.clicked_coordinates:
+                file.write(f"{coordinates[0]},{coordinates[1]},{coordinates[2]}\n")
+
+        """
         num_ants = 10
         num_iterations = 5
         start_node = (25,25)
@@ -192,6 +197,7 @@ class AntColonyGUI:
         best_tour, best_length = colony.run()
         print("\nBest Tour:", best_tour)
         print("Best Tour Length:", best_length)
+        """
         
 def main():
     root = tk.Tk()
@@ -199,7 +205,6 @@ def main():
     app = AntColonyGUI(root)
     root.mainloop()
 
-# Example usage:
 if __name__ == "__main__":
     main()
 
