@@ -15,13 +15,32 @@ public class MasterRoutingAgent extends Agent {
 	private int location;
 	protected void setup() {
 		
+		// Read names of responders as arguments
+		Object[] args = getArguments();
+		if (args != null && args.length > 0) {
+			nResponders = args.length;
+			System.out.println("Requesting dummyâ€�action to " + nResponders + " responders.");
+			// Create a REQUEST message
+			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+			for (int i = 0; i < args.length; ++i) {
+				// Add receivers
+				msg.addReceiver(new AID((String) args[i], AID.ISLOCALNAME));
+			}
+			// Set the interaction protocol
+			msg.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+			// Specify the reply deadline (10 seconds)
+			msg.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
+			// Set message content
+			msg.setContent("What is your capacity?");
+			send(msg);
+		
 		// Wait for input from user
 		System.out.println("Agent "+getLocalName()+": waiting for REQUEST message...");
 		ACLMessage trigger = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.CFP));
 		if (trigger.getContent().equalsIgnoreCase("start")) {
 			System.out.println("start");
 			// Read names of responders as arguments
-			Object[] args = getArguments();
+			/*Object[] args = getArguments();
 			if (args != null && args.length > 0) {
 				nResponders = args.length;
 				System.out.println("Requesting dummyâ€�action to " + nResponders + " responders.");
@@ -37,14 +56,14 @@ public class MasterRoutingAgent extends Agent {
 				msg.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
 				// Set message content
 				msg.setContent("What is your capacity?");
-				send(msg);
+				send(msg);*/
 				
 				
+				int k;
 				ACLMessage sendmsg = new ACLMessage(ACLMessage.REQUEST);
-				for (int i = 0; i < args.length; ++i) {
-					// Add receivers
-					sendmsg.addReceiver(new AID((String) args[i], AID.ISLOCALNAME));
-				}
+				k = 2;
+				sendmsg.addReceiver(new AID((String) args[k], AID.ISLOCALNAME));
+				
 				// Set the interaction protocol
 				sendmsg.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
 				// Specify the reply deadline (10 seconds)
