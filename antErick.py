@@ -1,6 +1,8 @@
 import numpy as np
 import tkinter as tk
 from tkinter import simpledialog
+import socket
+
 """
 class AntColony:
     def __init__(self, num_ants, num_iterations, nodes, start_node, alpha=1, beta=2, rho=0.5, Q=100):
@@ -153,9 +155,13 @@ class AntColonyGUI:
                     self.cells[row][col] = 0                
 
     def start_simulation(self):
+        send_coordinates(self.clicked_coordinates)
+        """
         with open("coordinates.txt", "w") as file:
+            sendcoordinates
+            
             for coordinates in self.clicked_coordinates:
-                file.write(f"{coordinates[0]},{coordinates[1]},{coordinates[2]}\n")
+                file.write(f"{coordinates[0]},{coordinates[1]},{coordinates[2]}\n")"""
 
         """
         num_ants = 10
@@ -198,7 +204,26 @@ class AntColonyGUI:
         print("\nBest Tour:", best_tour)
         print("Best Tour Length:", best_length)
         """
-        
+
+def send_coordinates(coordinates):
+    # Define the server address and port
+    server_address = ('localhost', 12345)  # Change 'localhost' to your server IP if needed
+
+    # Create a TCP/IP socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        try:
+            # Connect to the server
+            client_socket.connect(server_address)
+
+            # Send coordinates to the server
+            for coordinate in coordinates:
+                message = f"{(coordinate[0],coordinate[1],coordinate[2])}\n".encode()
+                client_socket.sendall(message)
+                print("Coordinates sent successfully!")
+
+        except Exception as e:
+            print("Error:", e)
+
 def main():
     root = tk.Tk()
     root.title('Ant Colony Simulation')
