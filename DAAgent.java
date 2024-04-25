@@ -1,80 +1,68 @@
-package Routing;
-import jade.core.AID;
+package part4;
+
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 public class DAAgent extends Agent {
-    private int capacity;
-    private int weightCapacity; 
+
+    private int capacity = 10; // Capacity
 
     protected void setup() {
-        capacity = 100;
-        weightCapacity = 500;
-        Object[] args = getArguments();
-        // Register with the MRA
-        ACLMessage registerMsg = new ACLMessage(ACLMessage.INFORM);
-        registerMsg.setContent("Capacity Constraint: " + capacity + " (Items), " + weightCapacity + " (Weight)");
-        // Master Routing Agent
-        for (int i = 0; i < args.length; ++i) {
-        	registerMsg.addReceiver(new AID((String) args[i], AID.ISLOCALNAME));
-        	send(registerMsg);
-        }
-
-        // Receive Schedule
-        //addBehaviour(new ReceiveSchedule());
-
-        // Handle Requests
-        //addBehaviour(new HandleRequests());
+        // Add a behavior
+        addBehaviour(new ReceiveMessageBehaviour());
     }
 
-    private class ReceiveSchedule extends CyclicBehaviour {
+    private class ReceiveMessageBehaviour extends jade.core.behaviours.CyclicBehaviour {
         public void action() {
-            ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            // Receive messages
+            ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
             if (msg != null) {
-                // Process received schedule
-                System.out.println("Received schedule from MRA: " + msg.getContent());
-            } else {
-                block();
-            }
-        }
-    }
+                // Receive message from MasterRoutingAgent
+                System.out.println("Received message from MasterRoutingAgent: " + msg.getContent());
+                if (msg.getContent().equals("What is your capacity?")) {
+                    // Respond with the capacity
+                    ACLMessage reply = msg.createReply();
+                    reply.setPerformative(ACLMessage.AGREE);
+                    reply.setContent("My capacity is: " + capacity);
+                    send(reply);
+                    System.out.println("Responded to MasterRoutingAgent: " + reply.getContent());
 
-    private class HandleRequests extends CyclicBehaviour {
-        public void action() {
-            ACLMessage request = receive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-            if (request != null) {
-                if (request.getContent().equals("UpdateCapacity")) {
-                    // Action
-                    ACLMessage reply = request.createReply();
-                    reply.setPerformative(ACLMessage.INFORM);
-                    // Update
-                    String[] contentParts = request.getContent().split(",");
-                    if (contentParts.length == 3) {
-                        int newCapacity = Integer.parseInt(contentParts[1]);
-                        int newWeightCapacity = Integer.parseInt(contentParts[2]);
-                        if (newCapacity <= capacity && newWeightCapacity <= weightCapacity) {
-                            capacity = newCapacity;
-                            weightCapacity = newWeightCapacity;
-                            reply.setContent("Capacity Constraint Updated: " + capacity + " (Items), " + weightCapacity + " (Weight)");
-                        } else {
-                            // Send a message when it exceeds
-                            reply.setContent("Capacity Update Failed: Exceeded maximum capacity constraint");
+                } else if (msg.getContent().equals("Can you deliver now?")) {
+                    ACLMessage reply = msg.createReply();
+                    reply.setPerformative(ACLMessage.AGREE);
+                    reply.setContent("Yes, I can deliver now");
+                    send(reply);
+                    System.out.println("Responded to MasterRoutingAgent: " + reply.getContent());
+                    reply.setPerformative(ACLMessage.AGREE);
+                    ACLMessage otherMsg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                    if (otherMsg != null) {
+                        // Process the inform message from MasterRoutingAgent
+                        if (otherMsg.getContent().startsWith("Deliver location:")) {
+                            informLocation(otherMsg.getContent());
+                        } if(otherMsg.getContent().startsWith("Deliver capacity:")) {
+                            informCapacity(otherMsg.getContent());
                         }
-                    } else {
-                        reply.setContent("Invalid Update Capacity Request");
                     }
-                    send(reply);
-                } else {
-                    // Handle
-                    ACLMessage reply = request.createReply();
-                    reply.setPerformative(ACLMessage.NOT_UNDERSTOOD);
-                    send(reply);
                 }
             } else {
                 block();
             }
+        }
+
+        // Handle delivery location
+        private void informLocation(String locationContent) {
+            // Extract delivery location
+            String location = locationContent.substring("Deliver location: ".length());
+            System.out.println("Received delivery location from MasterRoutingAgent: " + location);
+        }
+
+        // Handle delivery capacity
+        private void informCapacity(String capacityContent) {
+            // Extract capacity
+            String capacityStr = capacityContent.substring("Deliver capacity: ".length());
+            int capacity = Integer.parseInt(capacityStr);
+            System.out.println("Received delivery capacity from MasterRoutingAgent: " + capacity);
         }
     }
 }
