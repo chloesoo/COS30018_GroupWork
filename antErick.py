@@ -217,7 +217,7 @@ def send_coordinates(coordinates):
 
             # Send coordinates to the server
             for coordinate in coordinates:
-                message = f"{(coordinate[0],coordinate[1],coordinate[2])}\n".encode()
+                message = f"{coordinate[0]},{coordinate[1]},{coordinate[2]}\n".encode()
                 client_socket.sendall(message)
                 print("Coordinates sent successfully!")
 
