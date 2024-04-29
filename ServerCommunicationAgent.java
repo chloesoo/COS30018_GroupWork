@@ -5,13 +5,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
+import jade.core.AID;
 import jade.core.Agent;
+import jade.lang.acl.ACLMessage;
 
 public class ServerCommunicationAgent extends Agent {
-    
+
+    private String coordinateList1 = "";
     protected void setup() {
         System.out.println("Server agent " + getLocalName() + " is ready.");
+        AID masterRoutingAgentAID = new AID("mra", AID.ISLOCALNAME);
 
         // Create a new thread to handle the server logic
         Thread serverThread = new Thread(() -> {
@@ -25,18 +31,19 @@ public class ServerCommunicationAgent extends Agent {
                     // Accept incoming connection
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Connection established with: " + clientSocket.getInetAddress().getHostAddress());
-
+                	coordinateList1 = "";
                     // Handle the connection in a separate thread
                     Thread clientHandlerThread = new Thread(() -> {
                         try {
                             // Read coordinates sent by the client
                             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                            String coordinates;
-                            while ((coordinates = in.readLine()) != null) {
-                                System.out.println("Received coordinates: " + coordinates);
-
-                                // Add your responder behavior here
+                            String readCoordinates;
+                            while ((readCoordinates = in.readLine()) != null) {
+                                coordinateList1 += readCoordinates + "\n";
                             }
+
+                            // Send coordinates to MasterRoutingAgent
+                            sendCoordinatesToMaster(coordinateList1, masterRoutingAgentAID);
 
                             // Close the connection
                             in.close();
@@ -46,6 +53,7 @@ public class ServerCommunicationAgent extends Agent {
                         }
                     });
                     clientHandlerThread.start();
+                    
                 }
 
             } catch (IOException e) {
@@ -55,5 +63,13 @@ public class ServerCommunicationAgent extends Agent {
 
         // Start the server thread
         serverThread.start();
+    }
+    
+    private void sendCoordinatesToMaster(String coordinatesList, AID masterRoutingAgentAID) {
+        // Create and send ACL message containing coordinates to MasterRoutingAgent
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(masterRoutingAgentAID);
+        msg.setContent(coordinatesList); // Send coordinates as content
+        send(msg);
     }
 }
