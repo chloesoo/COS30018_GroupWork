@@ -7,7 +7,6 @@ import jade.lang.acl.MessageTemplate;
 public class DAAgent extends Agent {
 
     private int capacity = 10; // Capacity
-    private int location = 1010; // Default location
 
     protected void setup() {
         // Add a behavior
@@ -60,8 +59,7 @@ public class DAAgent extends Agent {
         // Handle delivery location
         private void informLocation(String locationContent) {
             // Extract delivery location
-            String locationStr = locationContent.substring("Deliver location: ".length());
-            location = Integer.parseInt(locationStr);
+            String location = locationContent.substring("Deliver location: ".length());
             System.out.println("Received delivery location from MasterRoutingAgent: " + location);
         }
 
@@ -69,7 +67,7 @@ public class DAAgent extends Agent {
         private void informCapacity(String capacityContent) {
             // Extract capacity
             String capacityStr = capacityContent.substring("Deliver capacity: ".length());
-            capacity = Integer.parseInt(capacityStr);
+            int capacity = Integer.parseInt(capacityStr);
             System.out.println("Received delivery capacity from MasterRoutingAgent: " + capacity);
         }
     }
