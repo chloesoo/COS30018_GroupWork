@@ -7,6 +7,7 @@ import jade.lang.acl.MessageTemplate;
 public class DAAgent extends Agent {
 
     private int capacity = 10; // Capacity
+    private int location = 1010; // Default location
 
     protected void setup() {
         // Add a behavior
@@ -27,33 +28,40 @@ public class DAAgent extends Agent {
                     reply.setContent("My capacity is: " + capacity);
                     send(reply);
                     System.out.println("Responded to MasterRoutingAgent: " + reply.getContent());
-
                 } else if (msg.getContent().equals("Can you deliver now?")) {
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
                     reply.setContent("Yes, I can deliver now");
                     send(reply);
                     System.out.println("Responded to MasterRoutingAgent: " + reply.getContent());
-                    reply.setPerformative(ACLMessage.AGREE);
-                    ACLMessage otherMsg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-                    if (otherMsg != null) {
-                        // Process the inform message from MasterRoutingAgent
-                        if (otherMsg.getContent().startsWith("Deliver location:")) {
-                            informLocation(otherMsg.getContent());
-                        } if(otherMsg.getContent().startsWith("Deliver capacity:")) {
-                            informCapacity(otherMsg.getContent());
-                        }
-                    }
                 }
             } else {
                 block();
+            }
+
+            // Receive delivery information from MasterRoutingAgent
+            ACLMessage deliveryMsg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            if (deliveryMsg != null) {
+                // Process the inform message from MasterRoutingAgent
+                if (deliveryMsg.getContent().startsWith("Deliver location:")) {
+                    informLocation(deliveryMsg.getContent());
+                } else if (deliveryMsg.getContent().startsWith("Deliver capacity:")) {
+                    informCapacity(deliveryMsg.getContent());
+                }
+                // Inform MasterRoutingAgent that delivery information has been received
+                ACLMessage informMsg = new ACLMessage(ACLMessage.INFORM);
+                informMsg.addReceiver(deliveryMsg.getSender());
+                informMsg.setContent("Received delivery information");
+                send(informMsg);
+                System.out.println("Message Received");
             }
         }
 
         // Handle delivery location
         private void informLocation(String locationContent) {
             // Extract delivery location
-            String location = locationContent.substring("Deliver location: ".length());
+            String locationStr = locationContent.substring("Deliver location: ".length());
+            location = Integer.parseInt(locationStr);
             System.out.println("Received delivery location from MasterRoutingAgent: " + location);
         }
 
@@ -61,7 +69,7 @@ public class DAAgent extends Agent {
         private void informCapacity(String capacityContent) {
             // Extract capacity
             String capacityStr = capacityContent.substring("Deliver capacity: ".length());
-            int capacity = Integer.parseInt(capacityStr);
+            capacity = Integer.parseInt(capacityStr);
             System.out.println("Received delivery capacity from MasterRoutingAgent: " + capacity);
         }
     }

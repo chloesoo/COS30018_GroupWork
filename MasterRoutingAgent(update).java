@@ -1,11 +1,12 @@
 package part4;
 
 import jade.core.Agent;
+import jade.domain.FIPANames;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
-import jade.domain.FIPANames;
+
 import java.util.Date;
 import java.util.Vector;
 
@@ -70,7 +71,7 @@ public class MasterRoutingAgent extends Agent {
                                 agree.getSender().getName() + " has agreed to the request");
                         System.out.println(getLocalName() + ": Agreed to send the parcel.");
 
-                        // Example: set location and capacity					
+                        //set location and capacity					
                         int location = 1010;
                         ACLMessage informLocation = new ACLMessage(ACLMessage.INFORM);
                         informLocation.setPerformative(ACLMessage.INFORM);
@@ -88,17 +89,6 @@ public class MasterRoutingAgent extends Agent {
 						System.out.println("Deliver capacity: " + capacity);
                     }
 
-                    // Method to handle an inform message from responder
-                    protected void handleInform(ACLMessage inform) {
-                        System.out.println(getLocalName() + ": " +
-                                inform.getSender().getName() + " have " + inform.getContent() + " capacity.");
-                    }
-
-                    // Method to handle a refuse message from responder
-                    protected void handleRefuse(ACLMessage refuse) {
-                        System.out.println(getLocalName() + ": " + refuse.getSender().getName() + " refused to perform the requested action");
-                        nResponders--;
-                    }
 
                     // Method to handle a failure message (failure in delivering the message)
                     protected void handleFailure(ACLMessage failure) {
@@ -123,6 +113,23 @@ public class MasterRoutingAgent extends Agent {
                 });
             } else {
                 System.out.println(getLocalName() + ": " + "You have not specified any arguments.");
+            }
+        }
+
+        //Behavior to handle INFORM messages from delivery agents (Added this part)
+        addBehaviour(new InformHandler());
+    }
+
+    //Handle INFORM messages from delivery agents (Added this part)
+    private class InformHandler extends jade.core.behaviours.CyclicBehaviour {
+        public void action() {
+            // Receive INFORM messages
+            ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            if (msg != null) {
+                System.out.println("Received INFORM message from " + msg.getSender().getName() + ": " + msg.getContent());
+                // Handle the received INFORM message here
+            } else {
+                block();
             }
         }
     }
