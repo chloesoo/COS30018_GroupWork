@@ -1,8 +1,12 @@
 package vehicle.routing.system;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -11,6 +15,7 @@ import java.util.List;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 public class ServerCommunicationAgent extends Agent {
 
@@ -40,12 +45,24 @@ public class ServerCommunicationAgent extends Agent {
                             String readCoordinates;
                             while ((readCoordinates = in.readLine()) != null) {
                                 coordinateList1 += readCoordinates + "\n";
+                                System.out.println(coordinateList1);
                             }
-
+                            
                             // Send coordinates to MasterRoutingAgent
                             sendCoordinatesToMaster(coordinateList1, masterRoutingAgentAID);
-
+                            ACLMessage messageReceived = blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                            
+                            File file = new File("C:\\Vehicle Routing System\\data.txt");
+                            file.getParentFile().mkdirs(); 
+                            
+                            String content = messageReceived.getContent();
+                            PrintWriter writer = new PrintWriter(new FileWriter("C:\\Vehicle Routing System\\data.txt", false));
+                            // Write data to the text file
+                            System.out.println("Content: " + content);
+                            writer.println(content);
+                            
                             // Close the connection
+                            writer.close();
                             in.close();
                             clientSocket.close();
                         } catch (IOException e) {
