@@ -1,6 +1,8 @@
-package cos30018.week4;
+package Project;
 
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -12,7 +14,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import cos30018.week4.AntColony;
+import Project.AntColony;
+
 
 public class MasterRoutingAgent extends Agent {
     private int nResponders;
@@ -20,8 +23,14 @@ public class MasterRoutingAgent extends Agent {
     private int location;
     private List<List<Integer>> coordinatesList = new ArrayList<>(); 
     private int[] start = new int[]{25, 25};
+    private List<String> routes = new ArrayList<>();
+    private int CapacityA;
+    private int CapacityB;
+    private int CapacityC;
+    private int CapacityD;
 
     protected void setup() {
+    	
         // Read names of responders as arguments
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
@@ -45,6 +54,9 @@ public class MasterRoutingAgent extends Agent {
             msg.setContent("What is your capacity?");
             send(msg);
 
+            addBehaviour(new HandleInform());
+            
+            if(CapacityA != 0 && CapacityB != 0 && CapacityC != 0 && CapacityD != 0) {
             while(true) {
             // Wait for input from user
             System.out.println("Agent " + getLocalName() + ": waiting for REQUEST message...");
@@ -57,6 +69,7 @@ public class MasterRoutingAgent extends Agent {
                 // Check if the content of the message contains coordinates
                 String content = trigger.getContent();
                 String[] lines = content.split("\n");
+                coordinatesList.clear();
              // Iterate over each line and split the coordinates by commas
                 for (String line : lines) {
                     // Split the line by commas to get individual coordinate strings
@@ -67,7 +80,11 @@ public class MasterRoutingAgent extends Agent {
 
                     // Parse each coordinate string into an integer and add it to the list
                     for (String coordinateString : coordinatesString) {
-                        coordinates.add(Integer.parseInt(coordinateString));
+                    	try {
+                    		coordinates.add(Integer.parseInt(coordinateString));
+                    	}catch (NumberFormatException e) {
+                    	    System.err.println("Error parsing coordinate string: " + coordinateString);
+                    	}
                     }
 
                     // Add the list of coordinates to the main list
@@ -86,8 +103,67 @@ public class MasterRoutingAgent extends Agent {
                     // Add a new line after printing each sublist
                     System.out.println();
                 }
+
+            	List<int[]> processedList = new ArrayList<>();
+                for (List<Integer> list : coordinatesList) {
+                    int[] array = list.stream().mapToInt(Integer::intValue).toArray();
+                    processedList.add(array);
+                }
                 
-                AntColonyOptimization(coordinatesList, start);
+                List<int[]> coordinatesList = new ArrayList<>();
+                for (int[] array : processedList) {
+                    // Create a new array without the last element
+                    int[] newArray = new int[array.length - 1];
+                    System.arraycopy(array, 0, newArray, 0, newArray.length);
+
+                    // Add the new array to the modified list
+                    coordinatesList.add(newArray);
+                }
+
+                List<int[]> region_A = new ArrayList<>();
+                List<int[]> region_B = new ArrayList<>();
+                List<int[]> region_C = new ArrayList<>();
+                List<int[]> region_D = new ArrayList<>();
+                region_A.clear();
+                region_B.clear();
+                region_C.clear();
+                region_D.clear();
+                for(int[] array: coordinatesList) {
+                	if (array[0] < 25) {
+                		if(array[1] < 25) {
+                			region_A.add(array);
+                		}
+                		else {
+                			region_D.add(array);
+                		}
+                	}
+                	else {
+                		if(array[1] < 25) {
+                			region_B.add(array);
+                		}
+                		else {
+                			region_C.add(array);
+                		}
+                	}
+                }
+                
+                routes.clear();
+                routes.add(AntColonyOptimization(region_A, start));
+                routes.add(AntColonyOptimization(region_B, start));
+                routes.add(AntColonyOptimization(region_C, start));
+                routes.add(AntColonyOptimization(region_D, start));
+                
+                String routesInString = "";
+                for (int i =0; i < routes.size(); i++) {
+                	System.out.println(routes.get(i));
+                	routesInString += routes.get(i).toString();
+                }
+                
+                ACLMessage messagetoServer = msg.createReply();
+                messagetoServer.addReceiver(server);
+                messagetoServer.setPerformative(ACLMessage.INFORM);
+                messagetoServer.setContent(routesInString);
+                send(messagetoServer);
             } 
             if (trigger.getContent().equalsIgnoreCase("start")) {
                 System.out.println("start");
@@ -173,51 +249,12 @@ public class MasterRoutingAgent extends Agent {
                 System.out.println(getLocalName() + ": " + "You have not specified any arguments.");
             }
             }
+            }
         }      
     }
     
-    private void AntColonyOptimization(List<List<Integer>> coordinates, int[] start) {
-    	
-    	List<int[]> processedList = new ArrayList<>();
-        for (List<Integer> list : coordinates) {
-            int[] array = list.stream().mapToInt(Integer::intValue).toArray();
-            processedList.add(array);
-        }
-        
-        List<int[]> coordinatesList = new ArrayList<>();
-        for (int[] array : processedList) {
-            // Create a new array without the last element
-            int[] newArray = new int[array.length - 1];
-            System.arraycopy(array, 0, newArray, 0, newArray.length);
 
-            // Add the new array to the modified list
-            coordinatesList.add(newArray);
-        }
-
-        List<int[]> region_A = new ArrayList<>();
-        List<int[]> region_B = new ArrayList<>();
-        List<int[]> region_C = new ArrayList<>();
-        List<int[]> region_D = new ArrayList<>();
-        
-        for(int[] array: coordinatesList) {
-        	if (array[0] < 25) {
-        		if(array[1] < 25) {
-        			region_A.add(array);
-        		}
-        		else {
-        			region_D.add(array);
-        		}
-        	}
-        	else {
-        		if(array[1] < 25) {
-        			region_B.add(array);
-        		}
-        		else {
-        			region_C.add(array);
-        		}
-        	}
-        }
-        
+	private String AntColonyOptimization(List<int[]> coordinates, int[] start) {
     	int numAnts = 10;
     	int numIterations = 100;
     	int[] startNode = start;
@@ -225,44 +262,44 @@ public class MasterRoutingAgent extends Agent {
     	double beta = 2;
     	double rho = 0.5;
     	double Q = 100;
-    	String bestTour_A = "";
-    	String bestTour_B = "";
-    	String bestTour_C = "";
-    	String bestTour_D = "";
+    	String bestTour = "";
     	
-    	if (region_A.size()!= 0) {
-	    	AntColony antColony_region_A = new AntColony(numAnts, numIterations, region_A, startNode, alpha, beta, rho, Q);
-	        bestTour_A = antColony_region_A.run();
-	        System.out.println(bestTour_A);
+
+    	AntColony antColony = new AntColony(numAnts, numIterations, coordinates, startNode, alpha, beta, rho, Q);
+        bestTour = antColony.run();
+        return bestTour;
+    }
+	
+	private class HandleInform extends jade.core.behaviours.CyclicBehaviour {
+    	public void action() {
+    		ACLMessage Capacitymsg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+    		if (Capacitymsg != null) {
+    			if (Capacitymsg.getContent().startsWith("My capacity is: ")) {
+    				String Capacity = Capacitymsg.getContent().substring("My capacity is: ".length());
+ 			        System.out.println("Received capacity from DAAgent: " + Capacity);
+ 			        int intCapacity = Integer.parseInt(Capacity);
+ 			    if(CapacityA == 0) {
+ 			    	CapacityA = intCapacity;
+ 			    }
+ 			    else if(CapacityB == 0){
+ 			    	CapacityB = intCapacity;
+ 			    }
+ 			    else if(CapacityC == 0){
+			    	CapacityC = intCapacity;
+			    }
+ 			    else {
+ 			    	CapacityD = intCapacity;
+ 			    }
+    			}
+    			System.out.println(CapacityA);
+    			System.out.println(CapacityB);
+    			System.out.println(CapacityC);
+    			System.out.println(CapacityD);
+    		}
+    		else {
+    			block();
+        }
     	}
-        
-        if (region_B.size()!= 0) {
-	        AntColony antColony_region_B = new AntColony(numAnts, numIterations, region_B, startNode, alpha, beta, rho, Q);
-	        bestTour_B = antColony_region_B.run();
-	        System.out.println(bestTour_B);
-        }
-        
-        if (region_C.size()!= 0) {
-	        AntColony antColony_region_C = new AntColony(numAnts, numIterations, region_C, startNode, alpha, beta, rho, Q);
-	        bestTour_C = antColony_region_C.run();
-        }
-        
-        if (region_D.size()!= 0) {
-	        AntColony antColony_region_D = new AntColony(numAnts, numIterations, region_D, startNode, alpha, beta, rho, Q);
-	        bestTour_D = antColony_region_D.run();
-        }
-        
-        if (bestTour_A != "") {
-        	System.out.println("Region A " + bestTour_A);
-        }
-        if (bestTour_B != "") {
-        	System.out.println("Region B " + bestTour_B);
-        }
-        if (bestTour_C != "") {
-        	System.out.println("Region C " + bestTour_C);
-        }
-        if (bestTour_D != "") {
-        	System.out.println("Region D " + bestTour_D);
-        }
+    
     }
 }

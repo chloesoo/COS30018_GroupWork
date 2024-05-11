@@ -30,7 +30,6 @@ public class MasterRoutingAgent extends Agent {
     private int CapacityD;
 
     protected void setup() {
-    	
         // Read names of responders as arguments
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
@@ -53,16 +52,52 @@ public class MasterRoutingAgent extends Agent {
             // Set message content
             msg.setContent("What is your capacity?");
             send(msg);
-
-            addBehaviour(new HandleInform());
+            
+            
+            while(true) {
+            ACLMessage Capacitymsg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            if (Capacitymsg != null) {
+    			if (Capacitymsg.getContent().startsWith("My capacity is: ")) {
+    				String Capacity = Capacitymsg.getContent().substring("My capacity is: ".length());
+ 			        System.out.println("Received capacity from DAAgent: " + Capacity);
+ 			        int intCapacity = Integer.parseInt(Capacity);
+ 			    if(CapacityA == 0) {
+ 			    	CapacityA = intCapacity;
+ 			    }
+ 			    else if(CapacityB == 0){
+ 			    	CapacityB = intCapacity;
+ 			    }
+ 			    else if(CapacityC == 0){
+			    	CapacityC = intCapacity;
+			    }
+ 			    else {
+ 			    	CapacityD = intCapacity;
+ 			    }
+    			}
+    			System.out.println(CapacityA);
+    			System.out.println(CapacityB);
+    			System.out.println(CapacityC);
+    			System.out.println(CapacityD);
+    			
+    		}
+            else if(CapacityA != 0 && CapacityB != 0 && CapacityC != 0 && CapacityD != 0) {
+            	break;
+            }
+    		else {
+    			//block();
+    			
+    		}
+            }
+            //addBehaviour(new HandleInform());
             
             if(CapacityA != 0 && CapacityB != 0 && CapacityC != 0 && CapacityD != 0) {
             while(true) {
-            // Wait for input from user
-            System.out.println("Agent " + getLocalName() + ": waiting for REQUEST message...");
-            ACLMessage trigger = blockingReceive(MessageTemplate.or(
-            	    MessageTemplate.MatchPerformative(ACLMessage.CFP),
-            	    MessageTemplate.MatchPerformative(ACLMessage.INFORM)));
+            	
+            	// Wait for input from user	
+                System.out.println("Agent " + getLocalName() + ": waiting for REQUEST message...");
+                ACLMessage trigger = blockingReceive(MessageTemplate.or(
+                	    MessageTemplate.MatchPerformative(ACLMessage.CFP),
+                	    MessageTemplate.MatchPerformative(ACLMessage.INFORM)));
             
             AID server = new AID("server", AID.ISLOCALNAME);
             if (trigger.getSender().getName().equals(server.getName())) {
@@ -184,8 +219,7 @@ public class MasterRoutingAgent extends Agent {
                 // Set message content
                 requestDeliveryMsg.setContent("Can you deliver now?");
                 send(requestDeliveryMsg);
-
-
+                
                 // Initialise the AchieveREInitiator behaviour and add to agent
                 addBehaviour(new AchieveREInitiator(this, requestDeliveryMsg) {
                     // Method to handle an agree message from responder
@@ -250,7 +284,7 @@ public class MasterRoutingAgent extends Agent {
             }
             }
             }
-        }      
+        }   
     }
     
 
@@ -270,7 +304,7 @@ public class MasterRoutingAgent extends Agent {
         return bestTour;
     }
 	
-	private class HandleInform extends jade.core.behaviours.CyclicBehaviour {
+	/*private class HandleInform extends jade.core.behaviours.CyclicBehaviour {
     	public void action() {
     		ACLMessage Capacitymsg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
     		if (Capacitymsg != null) {
@@ -289,17 +323,20 @@ public class MasterRoutingAgent extends Agent {
 			    }
  			    else {
  			    	CapacityD = intCapacity;
+ 			    	
  			    }
     			}
     			System.out.println(CapacityA);
     			System.out.println(CapacityB);
     			System.out.println(CapacityC);
     			System.out.println(CapacityD);
+    			
     		}
     		else {
     			block();
-        }
+    			System.out.println("Hello");
+    		}
     	}
-    
-    }
-}
+    			 
+    }*/
+   }
