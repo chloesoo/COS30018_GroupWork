@@ -1,4 +1,6 @@
-package part4;
+package Routing;
+
+import java.util.Random;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
@@ -6,7 +8,8 @@ import jade.lang.acl.MessageTemplate;
 
 public class DAAgent extends Agent {
 
-    private int capacity = 10; // Capacity
+	 Random random = new Random();
+    private int capacity = random.nextInt(4) + 4;; // Capacity
 
     protected void setup() {
         // Add a behavior
@@ -23,7 +26,7 @@ public class DAAgent extends Agent {
                 if (msg.getContent().equals("What is your capacity?")) {
                     // Respond with the capacity
                     ACLMessage reply = msg.createReply();
-                    reply.setPerformative(ACLMessage.AGREE);
+                    reply.setPerformative(ACLMessage.INFORM);
                     reply.setContent("My capacity is: " + capacity);
                     send(reply);
                     System.out.println("Responded to MasterRoutingAgent: " + reply.getContent());
@@ -53,6 +56,24 @@ public class DAAgent extends Agent {
                 informMsg.setContent("Received delivery information");
                 send(informMsg);
                 System.out.println("Message Received");
+                
+                int delayInSeconds = 3;
+
+                try {
+                    // Convert seconds to milliseconds
+                    long delayInMillis = delayInSeconds * 1000;
+                    // Sleep for the specified time
+                    Thread.sleep(delayInMillis);
+                    System.out.println("Time delay of " + delayInSeconds + " seconds completed.");
+                } catch (InterruptedException e) {
+                    System.out.println("Thread interrupted.");
+                }
+                
+                ACLMessage doneMsg = new ACLMessage(ACLMessage.INFORM);
+                doneMsg.addReceiver(deliveryMsg.getSender());
+                doneMsg.setContent("Done");
+                send(doneMsg);
+                
             }
         }
 

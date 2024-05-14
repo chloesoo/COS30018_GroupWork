@@ -1,4 +1,4 @@
-package vehicle.routing.system;
+package Project;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +56,7 @@ public class AntColony {
             }
         }
         System.out.println("Initial Pheromone Matrix:");
-        printMatrix(pheromoneMatrix);
+       // printMatrix(pheromoneMatrix);
 
         List<int[]> bestTour = null;
         double bestLength = Double.POSITIVE_INFINITY;
@@ -72,7 +72,7 @@ public class AntColony {
             System.out.println("\nAnt Tours:");
             for (int i = 0; i < antTours.size(); i++) {
                 List<int[]> tour = antTours.get(i);
-                System.out.println("Ant " + (i + 1) + " Tour: " + tourToString(tour));
+                //System.out.println("Ant " + (i + 1) + " Tour: " + tourToString(tour));
                 double tourLength = calculateTourLength(tour);
                 if (tourLength < bestLength) {
                     bestLength = tourLength;
