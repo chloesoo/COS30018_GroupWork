@@ -1,6 +1,6 @@
 import numpy as np
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import simpledialog, messagebox
 import socket
 import re
 import os
@@ -21,15 +21,28 @@ class AntColonyGUI:
 
         self.button = tk.Button(master, text='Start Simulation', command=self.start_simulation)
         self.button.pack()
+        
+        self.canvas.tag_bind("warehouse", '<Enter>', self.hover_enter_warehouse)
+        self.canvas.tag_bind("warehouse", '<Leave>', self.hover_leave_warehouse)
 
         self.read_file_timer()
+        self.region_A_capacity = 20
+        self.region_B_capacity = 20
+        self.region_C_capacity = 20
+        self.region_D_capacity = 20
 
+    def hover_enter_warehouse(self, event):
+        self.canvas.itemconfig("warehouse", fill="magenta", outline="magenta")
+
+    def hover_leave_warehouse(self, event):
+        self.canvas.itemconfig("warehouse", fill="red", outline="red")
+        
     def draw_warehouse(self):
         x0 = 25 * self.cell_size
         y0 = 25 * self.cell_size
         x1 = (25 + 1) * self.cell_size
         y1 = (25 + 1) * self.cell_size
-        self.canvas.create_rectangle(x0, y0, x1, y1, fill='red', outline='red')
+        self.canvas.create_rectangle(x0, y0, x1, y1, fill='red', outline='red', tags="warehouse")
 
     def click_handler(self, event):
         x, y = event.x, event.y
@@ -42,11 +55,91 @@ class AntColonyGUI:
                 self.canvas.create_rectangle(col * self.cell_size, row * self.cell_size,
                         (col + 1) * self.cell_size, (row + 1) * self.cell_size,
                         fill='black', outline='black')
+               
+                
                 capacity = simpledialog.askinteger("Input", f"Enter capacity for coordinate ({row}, {col}):")
+                insufficient = False
                 if capacity is not None:
-                    self.clicked_coordinates.append((col, row, capacity))
+                    if capacity != 0:
+                        if row < 25:
+                            if col < 25:
+                                if self.region_A_capacity - capacity >= 0:
+                                    self.region_A_capacity -= capacity
+                                    self.clicked_coordinates.append((col, row, capacity))
+                                    insufficient = False
+                                else:
+                                    messagebox.showerror("Error", "Remaining capacity: " + str(self.region_A_capacity))
+                                    insufficient = True
+                            else:
+                                if self.region_D_capacity - capacity >= 0:
+                                    self.region_D_capacity -= capacity
+                                    self.clicked_coordinates.append((col, row, capacity))
+                                    insufficient = False
+                                else:
+                                    messagebox.showerror("Error", "Remaining capacity: " + str(self.region_D_capacity))
+                                    insufficient = True
+                        elif row > 25:
+                            if col < 25:
+                                if self.region_B_capacity - capacity >= 0:
+                                    self.region_B_capacity -= capacity
+                                    self.clicked_coordinates.append((col, row, capacity))
+                                    insufficient = False
+                                else:
+                                    messagebox.showerror("Error", "Remaining capacity: " + str(self.region_B_capacity))
+                                    insufficient = True
+                            else:
+                                if self.region_C_capacity - capacity >= 0:
+                                    self.region_C_capacity -= capacity
+                                    self.clicked_coordinates.append((col, row, capacity))
+                                    insufficient = False
+                                else:
+                                    messagebox.showerror("Error", "Remaining capacity: " + str(self.region_C_capacity))
+                                    insufficient = True
+                    else:
+                        messagebox.showerror("Error", "Zero capacity error")
+                        self.canvas.create_rectangle(col * self.cell_size, row * self.cell_size,
+                                (col + 1) * self.cell_size, (row + 1) * self.cell_size,
+                                fill='white', outline='white')
                 else:
-                    self.clicked_coordinates.append((col, row, 1))
+                    if row < 25:
+                        if col < 25:
+                            if self.region_A_capacity - 1 >= 0:
+                                self.region_A_capacity -= 1
+                                self.clicked_coordinates.append((col, row, 1))
+                                insufficient = False
+                            else:
+                                messagebox.showerror("Error", "Remaining capacity: " + str(self.region_A_capacity))
+                                insufficient = True
+                        else:
+                            if self.region_D_capacity - 1 >= 0:
+                                self.region_D_capacity -= 1
+                                self.clicked_coordinates.append((col, row, 1))
+                                insufficient = False
+                            else:
+                                messagebox.showerror("Error", "Remaining capacity: " + str(self.region_D_capacity))
+                                insufficient = True
+                    elif row > 25:
+                        if col < 25:
+                            if self.region_B_capacity - 1 >= 0:
+                                self.region_B_capacity -= 1
+                                self.clicked_coordinates.append((col, row, 1))
+                                insufficient = False
+                            else:
+                                messagebox.showerror("Error", "Remaining capacity: " + str(self.region_B_capacity))
+                                insufficient = True
+                        else:
+                            if self.region_C_capacity - 1 >= 0:
+                                self.region_C_capacity -= 1
+                                self.clicked_coordinates.append((col, row, 1))
+                                insufficient = False
+                            else:
+                                messagebox.showerror("Error", "Remaining capacity: " + str(self.region_C_capacity))
+                                insufficient = True
+
+                if insufficient:
+                    self.canvas.create_rectangle(col * self.cell_size, row * self.cell_size,
+                            (col + 1) * self.cell_size, (row + 1) * self.cell_size,
+                            fill='white', outline='white')
             else:
                 for coordinate in self.clicked_coordinates:
                     if (coordinate[0], coordinate[1]) == (col, row):
@@ -54,7 +147,17 @@ class AntColonyGUI:
                         self.canvas.create_rectangle(col * self.cell_size, row * self.cell_size,
                                 (col + 1) * self.cell_size, (row + 1) * self.cell_size,
                                 fill='white', outline='white')
-                    self.cells[row][col] = 0                
+                    self.cells[row][col] = 0
+        else:
+            # Reset everything
+            self.canvas.delete("route_line")
+            for coordinate in self.clicked_coordinates:
+                self.canvas.create_rectangle(coordinate[0] * self.cell_size, coordinate[1] * self.cell_size,
+                        (coordinate[0] + 1) * self.cell_size, (coordinate[1] + 1) * self.cell_size,
+                        fill='white', outline='white')
+            self.clicked_coordinates.clear()
+            with open("C:\\Vehicle Routing System\\data.txt", "w") as file:
+                pass
 
     def draw_coordinates(self):
         for coordinate in self.clicked_coordinates:
@@ -63,7 +166,8 @@ class AntColonyGUI:
                                              fill='black', outline='black')
     
     def start_simulation(self):
-        send_coordinates(self.clicked_coordinates)
+        self.send_coordinates()
+        #self.clicked_coordinates.clear()
     
     def draw_lines(self):
         self.canvas.delete("route_line")
@@ -109,30 +213,30 @@ class AntColonyGUI:
         self.draw_warehouse()
         self.draw_coordinates()
 
-def send_coordinates(coordinates):
-    message = ""
-    # Define the server address and port
-    server_address = ('localhost', 12345)
+    def send_coordinates(self):
+        message = ""
+        # Define the server address and port
+        server_address = ('localhost', 12345)
 
-    # Create a TCP/IP socket
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        try:
-            # Connect to the server
-            client_socket.connect(server_address)
+        # Create a TCP/IP socket
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            try:
+                # Connect to the server
+                client_socket.connect(server_address)
 
-            # Send coordinates to the server
-            for coordinate in coordinates:
-                message += f"{coordinate[0]},{coordinate[1]},{coordinate[2]}\n"
+                # Send coordinates to the server
+                for coordinate in self.clicked_coordinates:
+                    message += f"{coordinate[0]},{coordinate[1]},{coordinate[2]}\n"
 
-            client_socket.sendall(message.encode())
-            print("Coordinates sent successfully!")
-            
-        except Exception as e:
-            print("Error:", e)
+                client_socket.sendall(message.encode())
+                print("Coordinates sent successfully!")
+                
+            except Exception as e:
+                print("Error:", e)
 
-        finally:
-            # Close the socket connection
-            client_socket.close()         
+            finally:
+                # Close the socket connection
+                client_socket.close()         
 
 def main():
     os.makedirs(os.path.dirname("C:\\Vehicle Routing System\\data.txt"), exist_ok=True)
