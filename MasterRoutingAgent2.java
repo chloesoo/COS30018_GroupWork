@@ -1,4 +1,4 @@
-package Project;
+package cos30018.week4;
 
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -14,8 +14,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import Project.AntColony;
-import Project.GeneticAlgorithm;
+import cos30018.week4.AntColony;
+import cos30018.week4.GeneticAlgorithm;
 
 
 public class MasterRoutingAgent2 extends Agent {
@@ -100,11 +100,7 @@ public class MasterRoutingAgent2 extends Agent {
     			
     		}
             }
-            
-            
-            
-            
-         
+
             //send(requestDeliveryMsg);
             if(CapacityA != 0 && CapacityB != 0 && CapacityC != 0 && CapacityD != 0) {
             while(true) {
@@ -227,23 +223,6 @@ public class MasterRoutingAgent2 extends Agent {
                     }
                     coordinateList.add(array);
                 }
-//                
-
-//            	List<int[]> processedList = new ArrayList<>();
-//                for (List<Integer> list : coordinatesList) {
-//                    int[] array = list.stream().mapToInt(Integer::intValue).toArray();
-//                    processedList.add(array);
-//                }
-                
-//                List<int[]> coordinatesList = new ArrayList<>();
-//                for (int[] array : processedList) {
-//                    // Create a new array without the last element
-//                    int[] newArray = new int[array.length - 1];
-//                    System.arraycopy(array, 0, newArray, 0, newArray.length);
-//
-//                    // Add the new array to the modified list
-//                    coordinatesList.add(newArray);
-//                }
                 
                 int capacityThresholdA = CapacityA; 
                 int capacityThresholdB = CapacityB;
@@ -281,14 +260,25 @@ public class MasterRoutingAgent2 extends Agent {
                 List<List<int[]>> sortedRegion_C = splitCoordinatesIntoRoutes(region_C, capacityThresholdC);
                 List<List<int[]>> sortedRegion_D = splitCoordinatesIntoRoutes(region_D, capacityThresholdD);
                 routes.clear();
-                //System.out.println(sortedRegion_A.get(0).toString());
+                
                 if(sortedRegion_A.size() == 2)
                 {
-                	routes.add(GeneticAlgorithmOptimization(sortedRegion_A.get(0), start));
-                	routes.add(GeneticAlgorithmOptimization(sortedRegion_A.get(1), start));
+                	if(sortedRegion_A.get(0).size() == 1 || sortedRegion_A.get(1).size() == 1)
+                	{
+                		routes.add(AntColonyOptimization(sortedRegion_A.get(0), start));
+                    	routes.add(AntColonyOptimization(sortedRegion_A.get(1), start));
+                	}else {
+                		routes.add(GeneticAlgorithmOptimization(sortedRegion_A.get(0), start));
+                    	routes.add(GeneticAlgorithmOptimization(sortedRegion_A.get(1), start));
+                	}
+                	
                 }else
                 {
-                	routes.add(GeneticAlgorithmOptimization(sortedRegion_A.get(0), start));
+                	if(sortedRegion_A.get(0).size() == 1) {
+                		routes.add(AntColonyOptimization(sortedRegion_A.get(0), start));
+                	}else {
+                		routes.add(GeneticAlgorithmOptimization(sortedRegion_A.get(0), start));
+                	}
                 }
                 
                 if(sortedRegion_B.size() == 2)
@@ -310,11 +300,21 @@ public class MasterRoutingAgent2 extends Agent {
                 
                 if(sortedRegion_D.size() == 2)
                 {
-                	routes.add(GeneticAlgorithmOptimization(sortedRegion_D.get(0), start));
-                	routes.add(GeneticAlgorithmOptimization(sortedRegion_D.get(1), start));
+                	if(sortedRegion_D.get(0).size() == 1 || sortedRegion_D.get(1).size() == 1)
+                	{
+                		routes.add(AntColonyOptimization(sortedRegion_D.get(0), start));
+                    	routes.add(AntColonyOptimization(sortedRegion_D.get(1), start));
+                	}else {
+                		routes.add(GeneticAlgorithmOptimization(sortedRegion_D.get(0), start));
+                    	routes.add(GeneticAlgorithmOptimization(sortedRegion_D.get(1), start));
+                	}
                 }else
                 {
-                	routes.add(GeneticAlgorithmOptimization(sortedRegion_D.get(0), start));
+                	if(sortedRegion_D.get(0).size() == 1) {
+                		routes.add(AntColonyOptimization(sortedRegion_D.get(0), start));
+                	}else {
+                		routes.add(GeneticAlgorithmOptimization(sortedRegion_D.get(0), start));
+                	}
                 }
       
                 String routesInString = "";
