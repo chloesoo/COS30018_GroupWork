@@ -78,7 +78,7 @@ class AntColonyGUI:
                                 else:
                                     messagebox.showerror("Error", "Remaining capacity: " + str(self.region_D_capacity))
                                     insufficient = True
-                        elif row > 25:
+                        elif row >= 25:
                             if col < 25:
                                 if self.region_B_capacity - capacity >= 0:
                                     self.region_B_capacity -= capacity
@@ -147,7 +147,19 @@ class AntColonyGUI:
                         self.canvas.create_rectangle(col * self.cell_size, row * self.cell_size,
                                 (col + 1) * self.cell_size, (row + 1) * self.cell_size,
                                 fill='white', outline='white')
+                        if coordinate[1] < 25:
+                            if coordinate[0] < 25:
+                                self.region_A_capacity += coordinate[2]
+                            else:
+                                self.region_D_capacity += coordinate[2]
+                        else:
+                            if coordinate[0] < 25:
+                                self.region_B_capacity += coordinate[2]
+                            else:
+                                self.region_C_capacity += coordinate[2]
+                                
                     self.cells[row][col] = 0
+                    
         else:
             # Reset everything
             self.canvas.delete("route_line")
@@ -156,6 +168,11 @@ class AntColonyGUI:
                         (coordinate[0] + 1) * self.cell_size, (coordinate[1] + 1) * self.cell_size,
                         fill='white', outline='white')
             self.clicked_coordinates.clear()
+            self.region_A_capacity = 20
+            self.region_B_capacity = 20
+            self.region_C_capacity = 20
+            self.region_D_capacity = 20
+            self.cells = [[0] * 50 for _ in range(50)]
             with open("C:\\Vehicle Routing System\\data.txt", "w") as file:
                 pass
 
