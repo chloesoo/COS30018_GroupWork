@@ -277,7 +277,7 @@ def main():
     with open("C:\\Vehicle Routing System\\data.txt", "w") as file:
         pass 
     root = tk.Tk()
-    root.title('Ant Colony Simulation')
+    root.title('Vehicle Routing System : Location Picker')
     app = AntColonyGUI(root)
     root.mainloop()
 

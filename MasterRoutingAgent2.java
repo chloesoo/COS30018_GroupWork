@@ -30,7 +30,8 @@ public class MasterRoutingAgent2 extends Agent {
     private int CapacityC;
     private int CapacityD;
     private int k=4;
- 
+    private static int agentCounter = 0;
+    private String routesInString = "";
   
 
     protected void setup() {
@@ -317,7 +318,7 @@ public class MasterRoutingAgent2 extends Agent {
                 	}
                 }
       
-                String routesInString = "";
+                
                 for (int i =0; i < routes.size(); i++) {
                 	System.out.println(routes.get(i));
                 	routesInString += routes.get(i).toString();
@@ -328,6 +329,7 @@ public class MasterRoutingAgent2 extends Agent {
                 messagetoServer.setPerformative(ACLMessage.INFORM);
                 messagetoServer.setContent(routesInString);
                 send(messagetoServer);
+                routesInString = "";
                 
              // Create a REQUEST message to ask all delivery agents if they can deliver now
                 ACLMessage requestDeliveryMsg = new ACLMessage(ACLMessage.REQUEST);
@@ -459,21 +461,7 @@ public class MasterRoutingAgent2 extends Agent {
         bestTour = antColony.run();
         return bestTour;
     }
-	
-	private int getTotalCapacity(List<int[]> region) {
-	    int totalCapacity = 0;
-	    for (int[] coordinate : region) {
-	        // Check if the coordinate array has the expected length
-	        if (coordinate.length < 3) {
-	            System.err.println("Error: Coordinate array does not have the expected length");
-	            continue; // Skip this coordinate and proceed to the next one
-	        }
-	        // Extract capacity from the coordinate array and add it to totalCapacity
-	        totalCapacity += coordinate[2];
-	    }
-	    return totalCapacity;
-	}
-	
+
 	private String GeneticAlgorithmOptimization(List<int[]> coordinates, int[] start) {
 	    int startingCity = 0;
 	    int populationSize = 100;
@@ -490,7 +478,6 @@ public class MasterRoutingAgent2 extends Agent {
 	    List<List<int[]>> routes = new ArrayList<>();
 	    List<int[]> currentRoute = new ArrayList<>();
 	    int currentCapacity = 0;
-	    int totalCapacity = getTotalCapacity(region);
 	    
 	    for (int[] coordinate : region) {
 	        // Check if the coordinate array has the expected length
@@ -502,21 +489,28 @@ public class MasterRoutingAgent2 extends Agent {
 	        // Extract capacity from the coordinate array
 	        int capacity = coordinate[2];
 
-	        // Check if adding the coordinate exceeds capacity threshold
-	        if (currentCapacity + capacity <= capacityThreshold) {
-	            currentRoute.add(coordinate);
-	            currentCapacity += capacity; // Add capacity
-	        } else {
-	            // Add current route to routes
-	            routes.add(currentRoute);
-	            // Debugging: Print current route and its total capacity
-	            printRoute(currentRoute, currentCapacity);
+	     // Check if the coordinate itself exceeds the capacity threshold
+            if (capacity > capacityThreshold) {
+                // Create a temporary route for this coordinate
+                List<int[]> tempRoute = new ArrayList<>();
+                tempRoute.add(coordinate);
+                createTemporaryDeliveryAgent(capacity, AntColonyOptimization(tempRoute,start));
+                printRoute(tempRoute, capacity);
+            } else if (currentCapacity + capacity > capacityThreshold) {
+                // Add current route to routes and start a new route
+                routes.add(currentRoute);
+                // Debugging: Print current route and its total capacity
+                printRoute(currentRoute, currentCapacity);
 
-	            // Start a new route with the current coordinate
-	            currentRoute = new ArrayList<>();
-	            currentRoute.add(coordinate); 
-	            currentCapacity = capacity; // Reset current capacity
-	        }
+                // Start a new route with the current coordinate
+                currentRoute = new ArrayList<>();
+                currentRoute.add(coordinate);
+                currentCapacity = capacity; // Reset current capacity
+            } else {
+                // Add the coordinate to the current route
+                currentRoute.add(coordinate);
+                currentCapacity += capacity; // Update current capacity
+            }
 	    }
 
 	    // Add the last route if it's not empty
@@ -542,6 +536,35 @@ public class MasterRoutingAgent2 extends Agent {
 	        System.out.print(") ");
 	    }
 	    System.out.println(", Total Capacity: " + totalCapacity);
+	}
+	
+	// Method to create a temporary delivery agent with a unique name
+	private void createTemporaryDeliveryAgent(int remainingCapacity, String items) {
+	    try {
+	    	routesInString += items;
+	        // Get the agent container
+	        jade.wrapper.AgentContainer container = getContainerController();
+	        
+	        agentCounter++;
+	        // Generate a unique name for the temporary agent
+	        String uniqueName = "TemporaryAgent_" + agentCounter;
+
+	        // Create a new instance of DAAgent (temporary agent)
+	        DAAgent temporaryAgent = new DAAgent();
+	        temporaryAgent.setCapacity(remainingCapacity); // Set temporary agent's capacity
+
+	        // Start the temporary agent with the unique name
+	        container.acceptNewAgent(uniqueName, temporaryAgent).start();
+
+	        System.out.println("Temporary delivery agent created with name: " + uniqueName);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+	        ACLMessage messagetoTemporaryAgent = msg.createReply();
+            messagetoTemporaryAgent.addReceiver(new AID(uniqueName, AID.ISLOCALNAME));
+            messagetoTemporaryAgent.setContent(items);
+            send(messagetoTemporaryAgent);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 	}
 
 	

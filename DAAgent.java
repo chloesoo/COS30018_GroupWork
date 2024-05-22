@@ -1,15 +1,16 @@
-package Routing;
+package cos30018.week4;
 
 import java.util.Random;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.util.leap.List;
 
 public class DAAgent extends Agent {
 
-	 Random random = new Random();
-    private int capacity = random.nextInt(4) + 4;; // Capacity
+	Random random = new Random();
+    private int capacity = random.nextInt(4) + 11; // Capacity
 
     protected void setup() {
         // Add a behavior
@@ -92,4 +93,19 @@ public class DAAgent extends Agent {
             System.out.println("Received delivery capacity from MasterRoutingAgent: " + capacity);
         }
     }
+
+	public void setCapacity(int remainingCapacity) {
+		this.capacity = remainingCapacity;
+		
+	}
+	
+//	public void setItems(List<int[]> items) {
+//        this.items = items;
+//    }
+//	
+//	@Override
+//    protected void setup() {
+//        // Add behaviours to handle items
+//        addBehaviour(new DeliveryBehaviour(this, items));
+//    }
 }
