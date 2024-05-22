@@ -18,6 +18,10 @@ class AntColonyGUI:
         self.draw_warehouse()
 
         self.canvas.bind('<Button-1>', self.click_handler)
+        self.canvas.bind('<Motion>', self.hover_handler)
+
+        self.info_label = tk.Label(master, text="Hover over a tile to see its coordinates")
+        self.info_label.pack()
 
         self.button = tk.Button(master, text='Start Simulation', command=self.start_simulation)
         self.button.pack()
@@ -30,7 +34,20 @@ class AntColonyGUI:
         self.region_B_capacity = 20
         self.region_C_capacity = 20
         self.region_D_capacity = 20
+        
+    def hover_handler(self, event):
+        x, y = event.x, event.y
+        col = x // self.cell_size
+        row = y // self.cell_size
 
+        capacity = 0
+        for coordinate in self.clicked_coordinates:
+            if (coordinate[0], coordinate[1]) == (col, row):
+                capacity = coordinate[2]
+                break
+            
+        self.info_label.config(text=f"Column: {col}, Row: {row}, Capacity: {capacity}")
+        
     def hover_enter_warehouse(self, event):
         self.canvas.itemconfig("warehouse", fill="magenta", outline="magenta")
 
