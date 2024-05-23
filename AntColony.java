@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class AntColony {
-	private int numAnts;
+    private int numAnts;
     private int numIterations;
     private List<Node> nodes;
     private Node startNode;
@@ -14,23 +14,25 @@ public class AntColony {
     private double Q;
     private double[][] distanceMatrix;
 
+    // Constructor to initialize the ant colony optimization algorithm parameters
     public AntColony(int numAnts, int numIterations, List<int[]> coordinates, int[] startCoordinate,
             double alpha, double beta, double rho, double Q) {
-		this.numAnts = numAnts;
-		this.numIterations = numIterations;
-		this.nodes = new ArrayList<>();
-		this.startNode = new Node(startCoordinate);
-		this.nodes.add(startNode);
-		for (int[] coordinate : coordinates) {
-		   nodes.add(new Node(coordinate));
-		}
-		this.alpha = alpha;
-		this.beta = beta;
-		this.rho = rho;
-		this.Q = Q;
-		this.distanceMatrix = calculateDistanceMatrix();
-	}
+        this.numAnts = numAnts;
+        this.numIterations = numIterations;
+        this.nodes = new ArrayList<>();
+        this.startNode = new Node(startCoordinate);
+        this.nodes.add(startNode);
+        for (int[] coordinate : coordinates) {
+           nodes.add(new Node(coordinate));
+        }
+        this.alpha = alpha;
+        this.beta = beta;
+        this.rho = rho;
+        this.Q = Q;
+        this.distanceMatrix = calculateDistanceMatrix();
+    }
 
+    // Calculate the distance matrix based on node coordinates
     private double[][] calculateDistanceMatrix() {
         int numNodes = nodes.size();
         double[][] distanceMatrix = new double[numNodes][numNodes];
@@ -44,23 +46,25 @@ public class AntColony {
         return distanceMatrix;
     }
 
-
+    // Run the ant colony optimization algorithm and return the best tour found
     public String run() {
         List<double[]> colony = new ArrayList<>();
         //System.out.println("Colony has been established at the following location(s): " + colony);
-
         double[][] pheromoneMatrix = new double[nodes.size()][nodes.size()];
+
+        // Initialize pheromone matrix with default value of 1.0
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
                 pheromoneMatrix[i][j] = 1.0;
             }
         }
         //System.out.println("Initial Pheromone Matrix:");
-       // printMatrix(pheromoneMatrix);
+        // printMatrix(pheromoneMatrix);
 
         List<int[]> bestTour = null;
         double bestLength = Double.POSITIVE_INFINITY;
 
+        // Perform optimization for the specified number of iterations
         for (int iteration = 0; iteration < numIterations; iteration++) {
             //System.out.println("\nIteration: " + (iteration + 1));
             List<List<int[]>> antTours = new ArrayList<>();
@@ -69,10 +73,10 @@ public class AntColony {
                 antTours.add(tour);
             }
 
+            // Find the best tour among all ants in this iteration
             //System.out.println("\nAnt Tours:");
             for (int i = 0; i < antTours.size(); i++) {
                 List<int[]> tour = antTours.get(i);
-                //System.out.println("Ant " + (i + 1) + " Tour: " + tourToString(tour));
                 double tourLength = calculateTourLength(tour);
                 if (tourLength < bestLength) {
                     bestLength = tourLength;
@@ -80,12 +84,14 @@ public class AntColony {
                 }
             }
 
+            // Update pheromones based on the ant tours
             pheromoneMatrix = updatePheromones(pheromoneMatrix, antTours);
         }
 
         return ("\nBest Tour: " + tourToString(bestTour));
     }
 
+    // Generate a tour for an ant based on pheromone and distance information
     private List<int[]> generateAntTour(double[][] pheromoneMatrix) {
         int startNodeIndex = nodes.indexOf(startNode);
         if (startNodeIndex == -1) {
@@ -111,13 +117,13 @@ public class AntColony {
         return tour;
     }
 
+    // Convert a Node object to an integer array of coordinates
     private int[] convertNodeToIntArray(Node node) {
         int[] coordinates = node.getCoordinates();
         return new int[] {(int) coordinates[0], (int) coordinates[1]};
     }
 
-
-
+    // Select the next node for an ant to visit based on probabilities
     private int selectNextNode(int currentNode, boolean[] visited, double[][] pheromoneMatrix) {
         double[] probabilities = calculateProbabilities(currentNode, visited, pheromoneMatrix);
         double rand = Math.random();
@@ -141,6 +147,7 @@ public class AntColony {
         throw new RuntimeException("Should not reach here.");
     }
 
+    // Calculate the probabilities of moving to each possible next node
     private double[] calculateProbabilities(int currentNode, boolean[] visited, double[][] pheromoneMatrix) {
         double[] pheromones = pheromoneMatrix[currentNode];
         double[] visibility = new double[nodes.size()];
@@ -165,6 +172,7 @@ public class AntColony {
         return probabilities;
     }
 
+    // Update the pheromone matrix based on the tours of all ants
     private double[][] updatePheromones(double[][] pheromoneMatrix, List<List<int[]>> antTours) {
         double evaporation = 1 - rho;
         for (int i = 0; i < pheromoneMatrix.length; i++) {
@@ -176,7 +184,7 @@ public class AntColony {
             int tourLength = calculateTourLength(tour);
             for (int i = 0; i < tour.size() - 1; i++) {
                 int nodeIndex1 = nodes.indexOf(tour.get(i));
-                int nodeIndex2 = nodes.indexOf(tour.get(i+1));
+                int nodeIndex2 = nodes.indexOf(tour.get(i + 1));
                 if (nodeIndex1 != -1 && nodeIndex2 != -1) { // Check if nodes are found
                     pheromoneMatrix[nodeIndex1][nodeIndex2] += Q / tourLength;
                     pheromoneMatrix[nodeIndex2][nodeIndex1] += Q / tourLength;
@@ -186,18 +194,18 @@ public class AntColony {
         return pheromoneMatrix;
     }
 
-
+    // Calculate the total length of a tour
     private int calculateTourLength(List<int[]> tour) {
         int length = 0;
         for (int i = 0; i < tour.size() - 1; i++) {
-           	int[] node1 = tour.get(i);
+            int[] node1 = tour.get(i);
             int[] node2 = tour.get(i + 1);
             length += Math.sqrt(Math.pow(node1[0] - node2[0], 2) + Math.pow(node1[1] - node2[1], 2));
         }
         return length;
     }
 
-
+    // Print a matrix (for debugging purposes)
     private void printMatrix(double[][] matrix) {
         for (double[] row : matrix) {
             for (double value : row) {
@@ -207,6 +215,7 @@ public class AntColony {
         }
     }
 
+    // Convert a tour to a string representation
     private String tourToString(List<int[]> tour) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -221,14 +230,17 @@ public class AntColony {
 class Node {
     private int[] coordinates;
 
+    // Constructor to initialize a Node with coordinates
     public Node(int[] coordinates) {
         this.coordinates = coordinates;
     }
 
+    // Get the coordinates of the Node
     public int[] getCoordinates() {
         return coordinates;
     }
 
+    // Calculate the distance to another Node
     public double distanceTo(Node other) {
         int[] otherCoordinates = other.getCoordinates();
         int deltaX = coordinates[0] - otherCoordinates[0];
@@ -236,6 +248,7 @@ class Node {
         return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     }
 
+    // Override equals method to compare Nodes based on their coordinates
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -244,6 +257,7 @@ class Node {
         return Arrays.equals(coordinates, node.coordinates);
     }
 
+    // Override hashCode method to generate a hash code based on coordinates
     @Override
     public int hashCode() {
         return Arrays.hashCode(coordinates);
