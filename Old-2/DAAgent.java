@@ -1,14 +1,15 @@
-package vehicle.routing.system;
+package cos30018.week4;
 
 import java.util.Random;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.util.leap.List;
 
 public class DAAgent extends Agent {
 
-	 Random random = new Random();
+	Random random = new Random();
     private int capacity = random.nextInt(4) + 11; // Capacity
 
     protected void setup() {
@@ -64,14 +65,14 @@ public class DAAgent extends Agent {
                     long delayInMillis = delayInSeconds * 1000;
                     // Sleep for the specified time
                     Thread.sleep(delayInMillis);
-                    //System.out.println("Time delay of " + delayInSeconds + " seconds completed.");
+                    System.out.println("Time delay of " + delayInSeconds + " seconds completed.");
                 } catch (InterruptedException e) {
                     System.out.println("Thread interrupted.");
                 }
                 
                 ACLMessage doneMsg = new ACLMessage(ACLMessage.INFORM);
                 doneMsg.addReceiver(deliveryMsg.getSender());
-                doneMsg.setContent("Done" + deliveryMsg.getContent());
+                doneMsg.setContent("Done");
                 send(doneMsg);
                 
             }
@@ -91,10 +92,20 @@ public class DAAgent extends Agent {
             int capacity = Integer.parseInt(capacityStr);
             System.out.println("Received delivery capacity from MasterRoutingAgent: " + capacity);
         }
-        
     }
 
 	public void setCapacity(int remainingCapacity) {
-		capacity = remainingCapacity;
+		this.capacity = remainingCapacity;
+		
 	}
+	
+//	public void setItems(List<int[]> items) {
+//        this.items = items;
+//    }
+//	
+//	@Override
+//    protected void setup() {
+//        // Add behaviours to handle items
+//        addBehaviour(new DeliveryBehaviour(this, items));
+//    }
 }

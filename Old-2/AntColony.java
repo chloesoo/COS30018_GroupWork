@@ -1,4 +1,4 @@
-package vehicle.routing.system;
+package Project;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +47,7 @@ public class AntColony {
 
     public String run() {
         List<double[]> colony = new ArrayList<>();
-        //System.out.println("Colony has been established at the following location(s): " + colony);
+        System.out.println("Colony has been established at the following location(s): " + colony);
 
         double[][] pheromoneMatrix = new double[nodes.size()][nodes.size()];
         for (int i = 0; i < nodes.size(); i++) {
@@ -55,21 +55,21 @@ public class AntColony {
                 pheromoneMatrix[i][j] = 1.0;
             }
         }
-        //System.out.println("Initial Pheromone Matrix:");
+        System.out.println("Initial Pheromone Matrix:");
        // printMatrix(pheromoneMatrix);
 
         List<int[]> bestTour = null;
         double bestLength = Double.POSITIVE_INFINITY;
 
         for (int iteration = 0; iteration < numIterations; iteration++) {
-            //System.out.println("\nIteration: " + (iteration + 1));
+            System.out.println("\nIteration: " + (iteration + 1));
             List<List<int[]>> antTours = new ArrayList<>();
             for (int ant = 0; ant < numAnts; ant++) {
                 List<int[]> tour = generateAntTour(pheromoneMatrix);
                 antTours.add(tour);
             }
 
-            //System.out.println("\nAnt Tours:");
+            System.out.println("\nAnt Tours:");
             for (int i = 0; i < antTours.size(); i++) {
                 List<int[]> tour = antTours.get(i);
                 //System.out.println("Ant " + (i + 1) + " Tour: " + tourToString(tour));
@@ -83,7 +83,7 @@ public class AntColony {
             pheromoneMatrix = updatePheromones(pheromoneMatrix, antTours);
         }
 
-        return ("\nBest Tour: " + tourToString(bestTour));
+        return ("\nBest Tour: " + tourToString(bestTour) + " with length: " + (int)bestLength);
     }
 
     private List<int[]> generateAntTour(double[][] pheromoneMatrix) {

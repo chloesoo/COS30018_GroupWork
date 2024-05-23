@@ -1,0 +1,1 @@
+-gui - agents da1:vehicle.routing.system.DAAgent("mra");da2:vehicle.routing.system.DAAgent("mra");da3:vehicle.routing.system.DAAgent("mra");da4:vehicle.routing.system.DAAgent("mra");server:vehicle.routing.system.ServerCommunicationAgent;mra:vehicle.routing.system.MasterRoutingAgent("da1,da2,da3,da4")
