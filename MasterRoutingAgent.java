@@ -358,13 +358,52 @@ public class MasterRoutingAgent extends Agent {
 								}
 								// Repeat similar process for other delivery agents and routes
 								else if(Agreemsg.getSender().getName().startsWith("da2") && routesB.size() != 0){
-									// ...
+									// Print confirmation message
+									System.out.println(Agreemsg.getSender().getName() + ": Agreed to send the parcel.");
+									// Create an INFORM message to send the delivery location
+									ACLMessage informLocation = new ACLMessage(ACLMessage.INFORM);
+									informLocation.setPerformative(ACLMessage.INFORM);
+									// Concatenate delivery locations
+									for (int i=0; i < routesA.size(); i++) {
+										locationToDeliver = locationToDeliver + routesB.get(i);
+										m++;
+									}
+									informLocation.setContent(locationToDeliver);
+									informLocation.addReceiver(Agreemsg.getSender());  
+									// Send the INFORM message
+									send(informLocation);
 								}
 								else if(Agreemsg.getSender().getName().startsWith("da3") && routesC.size() != 0){
-									// ...
+									// Print confirmation message
+									System.out.println(Agreemsg.getSender().getName() + ": Agreed to send the parcel.");
+									// Create an INFORM message to send the delivery location
+									ACLMessage informLocation = new ACLMessage(ACLMessage.INFORM);
+									informLocation.setPerformative(ACLMessage.INFORM);
+									// Concatenate delivery locations
+									for (int i=0; i < routesA.size(); i++) {
+										locationToDeliver = locationToDeliver + routesC.get(i);
+										m++;
+									}
+									informLocation.setContent(locationToDeliver);
+									informLocation.addReceiver(Agreemsg.getSender());  
+									// Send the INFORM message
+									send(informLocation);
 								}
 								else if(Agreemsg.getSender().getName().startsWith("da4") && routesD.size() != 0){
-									// ...
+									// Print confirmation message
+									System.out.println(Agreemsg.getSender().getName() + ": Agreed to send the parcel.");
+									// Create an INFORM message to send the delivery location
+									ACLMessage informLocation = new ACLMessage(ACLMessage.INFORM);
+									informLocation.setPerformative(ACLMessage.INFORM);
+									// Concatenate delivery locations
+									for (int i=0; i < routesA.size(); i++) {
+										locationToDeliver = locationToDeliver + routesD.get(i);
+										m++;
+									}
+									informLocation.setContent(locationToDeliver);
+									informLocation.addReceiver(Agreemsg.getSender());  
+									// Send the INFORM message
+									send(informLocation);
 								}   
 								else {
 									// Print error message if no suitable route found for delivery

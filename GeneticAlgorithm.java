@@ -2,8 +2,8 @@ package vehicle.routing.system;
 
 import java.util.*;
 
-import vehicle.routing.system.GA_Location;
-import vehicle.routing.system.GA_SalesmanGenome;
+import vehicle.routing.system.Location;
+import vehicle.routing.system.SalesmanGenome;
 
 
 public class GeneticAlgorithm {
